@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Minimalistic Webpage</title>
+    <style>
+        @font-face {
+            font-family: 'NotoSansJP';
+            font-style: normal;
+            font-weight: 400;
+            src: url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400&display=swap');
+        }
+        
+        body {
+            background-color: #F0F0F0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            transition: background-color 0.5s ease; /* Add transition for smooth color change */
+            font-family: 'NotoSansJP', sans-serif; /* Set font to Noto Sans JP */
+        }
+        
+        .word {
+            font-size: 12vw; /* Adjust initial font size based on window size */
+            font-weight: bold;
+            text-align: center;
+            color: #333333;
+            user-select: none; /* Prevent text from being highlighted */
+        }
+        
+        @media (max-width: 600px) {
+            /* Adjust font size for smaller screens */
+            .word {
+                font-size: 15vw;
+            }
+        }
+    </style>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var wordElement = document.querySelector('.word');
+            var dataUrl = 'data.json';
+            var jsonData = null;
+            var colors = ['#77DD77', '#6495ED', '#FF6961', '#FFB347'];
+            var isColored = false; // Flag to track if the background is colored or white
+            var currentIndex = 0; // Index to keep track of the current word
+
+            function getRandomIndex(length) {
+                return Math.floor(Math.random() * length);
+            }
+
+            function getRandomWord() {
+                if (jsonData.length === 0) {
+                    return '';
+                }
+
+                currentIndex = getRandomIndex(jsonData.length); // Get a random index for the current word
+                return jsonData[currentIndex].word;
+            }
+
+            function getRandomColor() {
+                if (jsonData.length === 0) {
+                    return '#F0F0F0'; // Default color if no data is available
+                }
+
+                var colorIndex = jsonData[currentIndex].color; // Get the color index from the JSON data
+                return colors[colorIndex];
+            }
+
+            function setWordAndColor() {
+                if (isColored) {
+                    var color = getRandomColor();
+                    document.body.style.backgroundColor = color;
+                } else {
+                    var word = getRandomWord();
+                    wordElement.textContent = word;
+                    document.body.style.backgroundColor = "#F0F0F0"; // Set the background to muted white
+                }
+
+                // Calculate the length of the word and adjust the font size
+                var wordLength = wordElement.textContent.length;
+                var fontSize = Math.max(9 - wordLength * 0.2, 1) + 'vw';
+                wordElement.style.fontSize = fontSize;
+            }
+
+            fetch(dataUrl)
+                .then(response => response.json())
+                .then(data => {
+                    jsonData = data;
+                    setWordAndColor();
+                })
+                .catch(error => console.error('Error:', error));
+
+            document.addEventListener('click', function() {
+                isColored = !isColored; // Toggle the flag
+                setWordAndColor();
+            });
+        });
+    </script>
+</head>
+<body>
+    <div class="word"></div>
+</body>
+</html>
+
