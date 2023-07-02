@@ -19,6 +19,7 @@
             margin: 0;
             transition: background-color 0.5s ease; /* Add transition for smooth color change */
             font-family: 'NotoSansJP', sans-serif; /* Set font to Noto Sans JP */
+            position: relative; /* Add position relative for pitch element positioning */
         }
         
         .word {
@@ -29,21 +30,42 @@
             user-select: none; /* Prevent text from being highlighted */
         }
         
-        @media (max-width: 600px) {
+        .pitch {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            color: #333333;
+            user-select: none; /* Prevent text from being highlighted */
+            font-size: 2rem;
+            visibility: hidden; /* Hide the pitch element initially */
+        }
+        
+        @media (max-width: 500px) {
             /* Adjust font size for smaller screens */
             .word {
-                font-size: 15vw;
+                font-size: 500vw;
             }
         }
     </style>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             var wordElement = document.querySelector('.word');
+            var pitchElement = document.querySelector('.pitch');
             var dataUrl = 'data.json';
             var jsonData = null;
             var colors = ['#77DD77', '#6495ED', '#FF6961', '#FFB347'];
             var isColored = false; // Flag to track if the background is colored or white
-            var currentIndex = 0; // Index to keep track of the current word
+            var currentIndex = -1; // Index to keep track of the current word
+
+            function shuffleArray(array) {
+                for (var i = array.length - 1; i > 0; i--) {
+                    var j = Math.floor(Math.random() * (i + 1));
+                    var temp = array[i];
+                    array[i] = array[j];
+                    array[j] = temp;
+                }
+                return array;
+            }
 
             function getRandomIndex(length) {
                 return Math.floor(Math.random() * length);
@@ -54,7 +76,7 @@
                     return '';
                 }
 
-                currentIndex = getRandomIndex(jsonData.length); // Get a random index for the current word
+                currentIndex = (currentIndex + 1) % jsonData.length; // Increment the index in a cyclic manner
                 return jsonData[currentIndex].word;
             }
 
@@ -71,10 +93,13 @@
                 if (isColored) {
                     var color = getRandomColor();
                     document.body.style.backgroundColor = color;
+                    pitchElement.textContent = '[' + jsonData[currentIndex].pitch + ']';
+                    pitchElement.style.visibility = 'visible'; // Show the pitch element
                 } else {
                     var word = getRandomWord();
                     wordElement.textContent = word;
                     document.body.style.backgroundColor = "#F0F0F0"; // Set the background to muted white
+                    pitchElement.style.visibility = 'hidden'; // Hide the pitch element
                 }
 
                 // Calculate the length of the word and adjust the font size
@@ -86,7 +111,7 @@
             fetch(dataUrl)
                 .then(response => response.json())
                 .then(data => {
-                    jsonData = data;
+                    jsonData = shuffleArray(data);
                     setWordAndColor();
                 })
                 .catch(error => console.error('Error:', error));
@@ -100,6 +125,7 @@
 </head>
 <body>
     <div class="word"></div>
+    <div class="pitch"></div>
 </body>
 </html>
 
